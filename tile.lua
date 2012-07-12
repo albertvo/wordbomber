@@ -38,19 +38,19 @@ return Tile
 -- letter.lua
 --
 -------------------------------------------------
-
+local easingx  = require("easing")
 local tile = {}
 local tile_mt = { __index = tile }	-- metatable
 
-local xGridStart = 6
-local yGridStart = 125
+local xGridStart = 0
+local yGridStart = 100
 local click = audio.loadSound("click_sound.wav")
 -------------------------------------------------
 -- PRIVATE FUNCTIONS
 -------------------------------------------------
 
-local function fall( realYears )	-- local; only visible in this module
-	return realYears * 7
+local function getXCoord( )	-- local; only visible in this module
+	return self.xGrid
 end
 
 -------------------------------------------------
@@ -60,13 +60,13 @@ end
 function tile.new( letter, xGridPos, yGridPos )	-- constructor
 	local new_tile = {
 		letter = letter or "a",
-		xGridPos = xGridPos or 0,
-		yGridPos = yGridPos or 0,
-		xCoord = xGridStart + (xGridPos * 42),
-		yCoord = yGridStart + (yGridPos * 43),
+		xGridPos = xGridPos or 1,
+		yGridPos = yGridPos or 1,
+		xCoord = xGridStart + (xGridPos * 64),
+		yCoord = yGridStart + (yGridPos * 64),
 		hasBomb = false,
 		isEmpty = false,
-		image = display.newImage("tile_a.png", xGridStart + (xGridPos * 42), yGridStart + (yGridPos * 43))
+		image = display.newImage("tile_"..letter..".png", xGridStart + ((xGridPos -1) * 64), yGridStart + ((yGridPos-1) * 64))
 	}
 	
 	new_tile.image:setReferencePoint( display.TopLeftReferencePoint)
@@ -74,7 +74,7 @@ function tile.new( letter, xGridPos, yGridPos )	-- constructor
 	function place_bomb( event )
 		audio.play(click)
 		new_tile.hasBomb = true
-		display.remove(new_tile.image)
+		--display.remove(new_tile.image)
 	end
 	new_tile.image:addEventListener( "tap", place_bomb )
 	
@@ -84,48 +84,22 @@ end
 
 -------------------------------------------------
 
+
 function tile:detonate()
 	if(self.hasBomb) then
 		display.remove(self.image)
+		self.image = nil
 		self.hasBomb = false
 		self.isEmpty = true
 	end
 end
   
-function tile:fall()
-	if(self.isEmpty == false) then
-		--find the lowest empty spot in the column
-		local lowestEmptyTile = nil
-		for i = self.yGridPos, grid_height, 1 do
-			if( game_board[self.xGridPos][i].isEmpty ) then
-				lowestEmptyTile = game_board[self.xGridPos][i]
-			end
-		end
-		
-		--migrate properties to the lowest empty spot and change game board
-		if( lowestEmptyTile ~= nil ) then
-			transition.to(self.image, {time=300, y=lowestEmptyTile.yCoord, transition = easing.linear})
-			
-			
-			print( lowestEmptyTile.yGridPos )
-			lowestEmptyTile.image = self.image
-			lowestEmptyTile.letter = self.letter
-			lowestEmptyTile.isEmpty = false
-			
-			
-			
-			self.isEmpty = true
-			self.image = nil
-			self.letter = nil
-			
-			--game_board[self.xGridPos][self.yGridPos] = self
-			
-			
-			
-			
-
-		end
-	end
+function tile:fall(xGridPos, yGridPos)
+	self.xGridPos = xGridPos
+	self.yGridPos = yGridPos
+	 xCoord = xGridStart + ((xGridPos-1) * 64)
+	 yCoord = yGridStart + ((yGridPos-1) * 64)
+	transition.to(self.image, {time=600, y=yCoord, transition = easingx.easeOutBounce})
 end
 
 
