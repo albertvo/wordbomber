@@ -31,8 +31,8 @@ local btn_menu = display.newImage( "btn_menu.png" )
 btn_menu.x = 90
 btn_menu.y = 45
 
-local textObject = display.newText( "Hello World!", 50, 50, nil, 24 )
-textObject:setTextColor( 255,255,255 )
+local wordToFind = display.newText( "Hello World!", 50, 800, nil, 24 )
+wordToFind:setTextColor( 255,255,255 )
 
 local click = audio.loadSound("click_sound.wav")
 
@@ -45,6 +45,7 @@ function load_game_board()
 		for j = 1, grid_height, 1 do
 			letterIndex = math.random (1, table.getn(letters))
 			game_board[i][j] = TileClass.new(letters[letterIndex], i, j )
+			--print(letters[letterIndex] .. i .. j)
 		end
 	end
 end	
@@ -94,7 +95,7 @@ function btn_menu:tap( event )
 	local r = math.random( 0, 255 )
     local g = math.random( 0, 255 )        
 	local b = math.random( 0, 255 )
- 	textObject:setTextColor( r, g, b )
+ 	wordToFind:setTextColor( r, g, b )
 	detonate()	
 end
 

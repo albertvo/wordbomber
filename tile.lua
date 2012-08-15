@@ -44,6 +44,7 @@ local tile_mt = { __index = tile }	-- metatable
 
 local xGridStart = 0
 local yGridStart = 100
+local tileWidth = 64
 local click = audio.loadSound("click_sound.wav")
 -------------------------------------------------
 -- PRIVATE FUNCTIONS
@@ -62,21 +63,23 @@ function tile.new( letter, xGridPos, yGridPos )	-- constructor
 		letter = letter or "a",
 		xGridPos = xGridPos or 1,
 		yGridPos = yGridPos or 1,
-		xCoord = xGridStart + (xGridPos * 64),
-		yCoord = yGridStart + (yGridPos * 64),
 		hasBomb = false,
 		isEmpty = false,
-		image = display.newImage("tile_"..letter..".png", xGridStart + ((xGridPos -1) * 64), yGridStart + ((yGridPos-1) * 64))
+		group = display.newGroup()
 	}
 	
-	new_tile.image:setReferencePoint( display.TopLeftReferencePoint)
+	local tileImage = display.newImage("tile_"..letter..".png")
+	new_tile.group:insert(tileImage)
+	new_tile.group:setReferencePoint( display.TopLeftReferencePoint)
+	new_tile.group.x = xGridStart + ((xGridPos-1) * tileWidth)
+	new_tile.group.y = yGridStart + ((yGridPos-1) * tileWidth)
+	
 	
 	function place_bomb( event )
 		audio.play(click)
 		new_tile.hasBomb = true
-		--display.remove(new_tile.image)
 	end
-	new_tile.image:addEventListener( "tap", place_bomb )
+	new_tile.group:addEventListener( "tap", place_bomb )
 	
 	
 	return setmetatable( new_tile, tile_mt )
@@ -87,8 +90,8 @@ end
 
 function tile:detonate()
 	if(self.hasBomb) then
-		display.remove(self.image)
-		self.image = nil
+		display.remove(self.group)
+		self.group = nil
 		self.hasBomb = false
 		self.isEmpty = true
 	end
@@ -97,9 +100,8 @@ end
 function tile:fall(xGridPos, yGridPos)
 	self.xGridPos = xGridPos
 	self.yGridPos = yGridPos
-	 xCoord = xGridStart + ((xGridPos-1) * 64)
-	 yCoord = yGridStart + ((yGridPos-1) * 64)
-	transition.to(self.image, {time=600, y=yCoord, transition = easingx.easeOutBounce})
+	local yCoord = yGridStart + (yGridPos-1) * tileWidth
+	transition.to(self.group, {time=600, y=yCoord, transition = easingx.easeOutBounce})
 end
 
 
